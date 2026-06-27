@@ -43,7 +43,7 @@ export function CanvasWrapper({ children }: { children: React.ReactNode }) {
       if (e.code === "Space" && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
         e.preventDefault()
         isSpaceHeld.current = true
-        setCursor("grab")
+        setCursor("cursor-grab")
       }
     }
     const onKeyUp = (e: KeyboardEvent) => {
@@ -95,7 +95,7 @@ export function CanvasWrapper({ children }: { children: React.ReactNode }) {
     if (isSpaceHeld.current) {
       isPanning.current = true
       lastMouse.current = { x: e.clientX, y: e.clientY }
-      setCursor("grabbing")
+      setCursor("cursor-grabbing")
     }
   }
 
@@ -112,7 +112,7 @@ export function CanvasWrapper({ children }: { children: React.ReactNode }) {
   const handleMouseUp = () => {
     if (isPanning.current) {
       isPanning.current = false
-      setCursor(isSpaceHeld.current ? "grab" : "")
+      setCursor(isSpaceHeld.current ? "cursor-grab" : "")
     }
   }
 
