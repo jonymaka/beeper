@@ -242,7 +242,7 @@ export default function Home() {
       </CanvasWrapper>
 
       {/* The Beeper Device Fixed at Bottom */}
-      <div className="relative z-20 pb-8 px-4 flex justify-center items-end">
+      <div className="absolute bottom-0 left-0 right-0 z-20 pb-8 px-4 flex justify-center items-end">
         <BeeperDevice
           onPrint={handlePrint}
           onPhotoClick={() => fileInputRef.current?.click()}
