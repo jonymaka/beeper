@@ -4,31 +4,35 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { X, Download } from "lucide-react" // Added FileDown for visual variance
-import { cn } from "@/lib/utils"
-import html2canvas from "html2canvas"
+import { toPng } from "html-to-image"
 
 export type FontType = "classic" | "modern" | "rough" | "elegant"
+export type TextureType = "plain" | "crumpled" | "grid" | "lined" | "vintage" | "kraft" | "dots" | "crosshatch"
 
 interface PaperCardProps {
   id: string
   text: string
   date: string
+  x: number
+  y: number
   onDelete: (id: string) => void
-  initialPosition?: { x: number; y: number }
-  texture?: "plain" | "crumpled" | "grid"
-  font?: FontType // Added font prop
-  style?: React.CSSProperties
+  onMove: (id: string, x: number, y: number) => void
+  entrance?: boolean
+  texture?: TextureType
+  font?: FontType
 }
 
 export function PaperCard({
   id,
   text,
   date,
+  x,
+  y,
   onDelete,
-  initialPosition,
+  onMove,
+  entrance = true,
   texture = "plain",
-  font = "classic", // Default font
-  style,
+  font = "classic",
 }: PaperCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [displayedText, setDisplayedText] = useState("")
@@ -58,21 +62,80 @@ export function PaperCard({
 
   const handleDownload = async () => {
     if (cardRef.current) {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 2, // Higher resolution
+      const dataUrl = await toPng(cardRef.current, {
+        backgroundColor: "#fdfbf7",
+        pixelRatio: 2,
       })
       const link = document.createElement("a")
       link.download = `fax-message-${id}.png`
-      link.href = canvas.toDataURL("image/png")
+      link.href = dataUrl
       link.click()
     }
   }
 
-  const textureClasses = {
-    plain: "bg-[#fdfbf7] shadow-inner", // Made plain slightly off-white for realism
-    crumpled: "bg-[#f0f0f0] bg-[url('https://www.transparenttextures.com/patterns/crumpled-paper.png')]",
-    grid: "bg-white bg-[url('https://www.transparenttextures.com/patterns/graphy.png')]",
+  const textureColors: Record<TextureType, string> = {
+    plain: "#fdfbf7",
+    crumpled: "#ece7e0",
+    grid: "#ffffff",
+    lined: "#fdfbf7",
+    vintage: "#f5e6c8",
+    kraft: "#c4a882",
+    dots: "#fdfbf7",
+    crosshatch: "#f8f8f8",
+  }
+
+  const textureStyles: Record<TextureType, React.CSSProperties> = {
+    plain: { backgroundColor: "#fdfbf7" },
+    crumpled: {
+      backgroundColor: "#ece7e0",
+      backgroundImage: [
+        "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)",
+        "repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)",
+      ].join(","),
+      backgroundSize: "100px 100px",
+    },
+    grid: {
+      backgroundColor: "#ffffff",
+      backgroundImage: [
+        "repeating-linear-gradient(0deg,transparent,transparent 29px,#e5e5e5 29px,#e5e5e5 30px)",
+        "repeating-linear-gradient(90deg,transparent,transparent 29px,#e5e5e5 29px,#e5e5e5 30px)",
+      ].join(","),
+      backgroundSize: "30px 30px",
+    },
+    lined: {
+      backgroundColor: "#fdfbf7",
+      backgroundImage: "repeating-linear-gradient(transparent,transparent 23px,#e8e0d0 23px,#e8e0d0 24px)",
+      backgroundSize: "auto 28px",
+    },
+    vintage: {
+      backgroundColor: "#f5e6c8",
+      backgroundImage: [
+        "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,90,43,0.04) 2px,rgba(139,90,43,0.04) 3px)",
+        "repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(139,90,43,0.04) 2px,rgba(139,90,43,0.04) 3px)",
+      ].join(","),
+      backgroundSize: "200px 200px",
+    },
+    kraft: {
+      backgroundColor: "#c4a882",
+      backgroundImage: [
+        "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 3px)",
+        "repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 3px)",
+      ].join(","),
+      backgroundSize: "150px 150px",
+    },
+    dots: {
+      backgroundColor: "#fdfbf7",
+      backgroundImage: "radial-gradient(circle,#d4d4d4 1.5px,transparent 1.5px)",
+      backgroundSize: "24px 24px",
+    },
+    crosshatch: {
+      backgroundColor: "#f8f8f8",
+      backgroundImage: [
+        "repeating-linear-gradient(45deg,transparent,transparent 5px,#e0ddd5 5px,#e0ddd5 6px)",
+        "repeating-linear-gradient(-45deg,transparent,transparent 5px,#e0ddd5 5px,#e0ddd5 6px)",
+      ].join(","),
+      backgroundSize: "12px 12px",
+    },
   }
 
   const fontStyles = {
@@ -86,25 +149,26 @@ export function PaperCard({
     <motion.div
       drag
       dragMomentum={false}
-      // Using initialPosition if provided, otherwise defaulting to a "coming out of printer" animation
-      initial={initialPosition || { y: 300, opacity: 0, scale: 0.9 }} // Start from "inside" (lower Y)
-      animate={{ y: 0, opacity: 1, scale: 1 }} // Move up to natural position (0 relative to top/left set in style)
+      whileDrag={{ zIndex: 9999 }}
+      onDragEnd={(_, info) => {
+        onMove(id, x + info.offset.x, y + info.offset.y)
+      }}
+      initial={entrance ? false : { x, y }}
+      animate={entrance ? { x, y, opacity: 1, scale: 1 } : { x, y }}
       transition={{ duration: 1.5, type: "spring", damping: 20, stiffness: 100 }}
       className="absolute z-20 cursor-grab active:cursor-grabbing"
-      style={{ touchAction: "none", ...style }} // Apply external positioning
+      style={{ left: 0, top: 0, touchAction: "none" }}
     >
       <div
         ref={cardRef}
-        className={cn(
-          "relative w-auto max-w-[400px] min-w-[300px] shadow-xl text-black p-0 group transition-transform hover:scale-[1.01]",
-          // Dynamic font class is applied to the text container, not here
-        )}
+        className="relative w-auto max-w-[400px] min-w-[300px] shadow-xl text-black p-0 group transition-transform hover:scale-[1.01]"
       >
         {/* Top Jagged Edge */}
         <div className="h-4 w-full relative overflow-hidden">
           <div
-            className={cn("absolute bottom-[-16px] w-full h-8 transform rotate-180", textureClasses[texture])}
+            className="absolute bottom-[-16px] w-full h-8 transform rotate-180"
             style={{
+              backgroundColor: textureColors[texture],
               clipPath:
                 "polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%)",
             }}
@@ -112,7 +176,7 @@ export function PaperCard({
         </div>
 
         {/* Main Content Area */}
-        <div className={cn("px-8 py-8 flex flex-col relative", textureClasses[texture])}>
+        <div className="px-8 py-8 flex flex-col relative" style={textureStyles[texture]}>
           {/* Paper Texture Overlay for realism */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/noise-lines.png')] mix-blend-multiply"></div>
 
@@ -165,8 +229,9 @@ export function PaperCard({
         {/* Bottom Jagged Edge */}
         <div className="h-4 w-full relative overflow-hidden">
           <div
-            className={cn("absolute top-[-16px] w-full h-8", textureClasses[texture])}
+            className="absolute top-[-16px] w-full h-8"
             style={{
+              backgroundColor: textureColors[texture],
               clipPath:
                 "polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%)",
             }}

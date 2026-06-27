@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect, useCallback } from "react"
 import { loadAll, saveAll } from "@/lib/db"
 import { BeeperDevice } from "@/components/beeper-device"
-import { PaperCard, type FontType } from "@/components/paper-card"
+import { PaperCard, type FontType, type TextureType } from "@/components/paper-card"
 import { PhotoSticker } from "@/components/photo-sticker"
 import { PhotoEditor } from "@/components/photo-editor"
 import { Settings } from "lucide-react"
@@ -16,7 +16,7 @@ interface Message {
   date: string
   x: number
   y: number
-  texture: "plain" | "crumpled" | "grid"
+  texture: TextureType
   font: FontType // Added font field
 }
 
@@ -30,7 +30,7 @@ interface Photo {
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [photos, setPhotos] = useState<Photo[]>([])
-  const [currentTexture, setCurrentTexture] = useState<"plain" | "crumpled" | "grid">("plain")
+  const [currentTexture, setCurrentTexture] = useState<TextureType>("plain")
   const [currentFont, setCurrentFont] = useState<FontType>("classic") // Updated default
   const [showSettings, setShowSettings] = useState(false)
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string } | null>(null)
@@ -190,7 +190,7 @@ export default function Home() {
                 Stationery Type
               </h3>
               <div className="space-y-1">
-                {(["plain", "crumpled", "grid"] as const).map((type) => (
+                {(["plain", "crumpled", "grid", "lined", "vintage", "kraft", "dots", "crosshatch"] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setCurrentTexture(type)}
