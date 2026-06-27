@@ -1,12 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { loadAll, saveAll } from "@/lib/db"
 import { BeeperDevice } from "@/components/beeper-device"
 import { PaperCard, type FontType } from "@/components/paper-card"
 import { PhotoSticker } from "@/components/photo-sticker"
 import { PhotoEditor } from "@/components/photo-editor"
 import { Settings } from "lucide-react"
+import { CanvasWrapper } from "@/components/canvas-wrapper"
 
 interface Message {
   id: string
@@ -34,6 +36,32 @@ export default function Home() {
   const [editingPhoto, setEditingPhoto] = useState<{ id: string; url: string } | null>(null)
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [loaded, setLoaded] = useState(false)
+  const restoredIds = useRef(new Set<string>())
+
+  useEffect(() => {
+    Promise.all([loadAll<Message>("messages"), loadAll<Photo>("photos")]).then(
+      ([savedMessages, savedPhotos]) => {
+        savedMessages.forEach((m) => restoredIds.current.add(m.id))
+        setMessages(savedMessages)
+        setPhotos(savedPhotos)
+        setLoaded(true)
+      }
+    )
+  }, [])
+
+  const save = useCallback(
+    (msgs: Message[], phs: Photo[]) => {
+      if (!loaded) return
+      saveAll("messages", msgs)
+      saveAll("photos", phs)
+    },
+    [loaded]
+  )
+
+  useEffect(() => {
+    save(messages, photos)
+  }, [messages, photos, save])
 
   const handlePrint = (text: string) => {
     const newMessage: Message = {
@@ -57,8 +85,16 @@ export default function Home() {
     setMessages((prev) => prev.filter((m) => m.id !== id))
   }
 
+  const handleMoveMessage = (id: string, x: number, y: number) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, x, y } : m)))
+  }
+
   const handleDeletePhoto = (id: string) => {
     setPhotos((prev) => prev.filter((p) => p.id !== id))
+  }
+
+  const handleMovePhoto = (id: string, x: number, y: number) => {
+    setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, x, y } : p)))
   }
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,18 +210,20 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Paper Area (Drop Zone) */}
-      <div className="flex-grow relative z-20">
+      <CanvasWrapper>
         {messages.map((msg) => (
           <PaperCard
             key={msg.id}
             id={msg.id}
             text={msg.text}
             date={msg.date}
+            x={msg.x}
+            y={msg.y}
             onDelete={handleDeleteMessage}
-            style={{ left: msg.x, top: msg.y }}
+            onMove={handleMoveMessage}
+            entrance={!restoredIds.current.has(msg.id)}
             texture={msg.texture}
-            font={msg.font} // Pass font prop
+            font={msg.font}
           />
         ))}
 
@@ -198,12 +236,13 @@ export default function Home() {
             y={photo.y}
             onDelete={handleDeletePhoto}
             onEdit={handleEditPhoto}
+            onMove={handleMovePhoto}
           />
         ))}
-      </div>
+      </CanvasWrapper>
 
       {/* The Beeper Device Fixed at Bottom */}
-      <div className="relative z-30 pb-8 px-4 flex justify-center items-end">
+      <div className="relative z-20 pb-8 px-4 flex justify-center items-end">
         <BeeperDevice
           onPrint={handlePrint}
           onPhotoClick={() => fileInputRef.current?.click()}
