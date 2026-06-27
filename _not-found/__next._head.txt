@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[17607,["/beeper/_next/static/chunks/d38b06cf60ab52c0.js","/beeper/_next/static/chunks/5c51345dfe813d81.js"],"ViewportBoundary"]
+4:I[17607,["/beeper/_next/static/chunks/d38b06cf60ab52c0.js","/beeper/_next/static/chunks/5c51345dfe813d81.js"],"MetadataBoundary"]
+5:"$Sreact.suspense"
+7:I[63205,["/beeper/_next/static/chunks/d38b06cf60ab52c0.js","/beeper/_next/static/chunks/5c51345dfe813d81.js"],"IconMark"]
+0:{"buildId":"XJQcP9u3GYPTG_opw-aNd","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+6:[["$","title","0",{"children":"Gemini Fax Beeper"}],["$","meta","1",{"name":"description","content":"A retro typewriter and pager experience"}],["$","meta","2",{"name":"generator","content":"v0.app"}],["$","link","3",{"rel":"icon","href":"/beeper/icon-light-32x32.png","media":"(prefers-color-scheme: light)"}],["$","link","4",{"rel":"icon","href":"/beeper/icon-dark-32x32.png","media":"(prefers-color-scheme: dark)"}],["$","link","5",{"rel":"icon","href":"/beeper/icon.svg","type":"image/svg+xml"}],["$","link","6",{"rel":"apple-touch-icon","href":"/beeper/apple-icon.png"}],["$","$L7","7",{}]]
