@@ -90,7 +90,7 @@ export function BeeperDevice({ onPrint, onPhotoClick, currentFont, onFontChange 
   }
 
   return (
-    <div className="relative w-[95%] md:w-full max-w-[420px] mx-auto transition-all duration-300">
+    <div className="relative w-[95%] md:w-full max-w-[420px] mx-auto transition-all duration-300 pointer-events-auto">
       {/* The Green Case */}
       <div className="bg-[#8cc63f] rounded-[24px] md:rounded-[32px] p-4 sm:p-6 pb-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5),inset_0_-8px_12px_rgba(0,0,0,0.2),inset_0_4px_8px_rgba(255,255,255,0.4)] relative z-10 transform transition-transform hover:scale-[1.005]">
         {/* Top Label Area */}
